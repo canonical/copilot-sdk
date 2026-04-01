@@ -1,0 +1,5 @@
+#!/usr/bin/bash
+
+cat <<EOF >/etc/profile.d/copilot-cli.sh
+export PATH="${SDK}/bin:\$PATH"
+EOF
