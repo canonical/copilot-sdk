@@ -19,13 +19,12 @@
     }
   ],
   "baseBranchPatterns": [
-    "1.0"
+    "latest"
   ],
   "packageRules": [
     {
       "matchPackageNames": ["@github/copilot"],
-      "matchBaseBranches": ["1.0"],
-      "allowedVersions": "/^1\\.0\\./"
+      "matchBaseBranches": ["latest"]
     }
   ]
 }
