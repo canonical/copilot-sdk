@@ -1,4 +1,4 @@
-name: copilot-cli
+name: copilot
 adopt-info: copilot-cli
 title: GitHub Copilot CLI SDK
 summary: GitHub Copilot CLI - AI-powered coding assistant for the terminal
