@@ -1,0 +1,22 @@
+#!/usr/bin/bash
+set -eu
+
+# Restore user-mutable Copilot state captured by save-state.
+# Runs as root; `cp -a` preserves source ownership, but we chown defensively
+# in case any parent directories had to be created.
+
+WORKSHOP_HOME=/home/workshop
+
+restore() {
+    local name="$1"
+    local dst="$2"
+    local src="$SDK_STATE_DIR/$name"
+    if [ -d "$src" ]; then
+        install -d -o workshop -g workshop "$dst"
+        cp -a "$src/." "$dst/"
+        chown -R workshop:workshop "$dst"
+    fi
+}
+
+restore copilot       "$WORKSHOP_HOME/.copilot"
+restore cache-copilot "$WORKSHOP_HOME/.cache/copilot"
