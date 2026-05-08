@@ -2,10 +2,10 @@
 
 mkdir -p /home/workshop/.copilot
 
-# Conditionally write copilot-instructions.md — do not overwrite if user already has one
+# Install the SDK's copilot-instructions.md only on first run. Once it
+# exists — whether unchanged from the SDK or user-customised — refreshes
+# leave it alone. To pull in an updated SDK prompt, delete the file and
+# run `workshop refresh`.
 if [[ ! -f "/home/workshop/.copilot/copilot-instructions.md" ]]; then
     cp "${SDK}/workshop-prompt.md" "/home/workshop/.copilot/copilot-instructions.md"
-elif ! grep -Fq "$(head -1 "${SDK}/workshop-prompt.md")" "/home/workshop/.copilot/copilot-instructions.md"; then
-    printf '\n' >> "/home/workshop/.copilot/copilot-instructions.md"
-    cat "${SDK}/workshop-prompt.md" >> "/home/workshop/.copilot/copilot-instructions.md"
 fi
