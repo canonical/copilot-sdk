@@ -13,9 +13,10 @@
       "matchStrings": [
         "(?<currentValue>[0-9.]+)"
       ],
-      "depNameTemplate": "@github/copilot",
-      "datasourceTemplate": "npm",
-      "versioningTemplate": "semver"
+      "depNameTemplate": "github/copilot-cli",
+      "datasourceTemplate": "github-releases",
+      "versioningTemplate": "semver",
+      "extractVersionTemplate": "^v?(?<version>.+)$"
     }
   ],
   "baseBranchPatterns": [
@@ -23,7 +24,7 @@
   ],
   "packageRules": [
     {
-      "matchPackageNames": ["@github/copilot"],
+      "matchPackageNames": ["github/copilot-cli"],
       "matchBaseBranches": ["latest"]
     }
   ]

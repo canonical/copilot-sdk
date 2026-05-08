@@ -12,6 +12,9 @@ platforms:
   amd64:
     build-on: [amd64]
     build-for: [amd64]
+  arm64:
+    build-on: [arm64]
+    build-for: [arm64]
 
 plugs:
   copilot-config:
@@ -20,16 +23,50 @@ plugs:
 
 parts:
   copilot-cli:
-    plugin: npm
-    source: .
-    npm-include-node: true
-    npm-node-version: 22.22.1
+    plugin: nil
+    build-packages:
+      - curl
+      - ca-certificates
     override-pull: |
-      VERSION=$(cat "$CRAFT_PROJECT_DIR/VERSION")
+      VERSION="$(cat "$CRAFT_PROJECT_DIR/VERSION")"
       craftctl set version="$VERSION"
-      curl -fLO "https://registry.npmjs.org/@github/copilot/-/copilot-${VERSION}.tgz"
-      tar -xzf "copilot-${VERSION}.tgz" --strip-components=1 -C "$CRAFT_PART_SRC"
-      rm "copilot-${VERSION}.tgz"
+
+      case "$CRAFT_ARCH_BUILD_FOR" in
+        amd64) PLATFORM="linux-x64"   ;;
+        arm64) PLATFORM="linux-arm64" ;;
+        *) echo "Unsupported arch: $CRAFT_ARCH_BUILD_FOR" >&2; exit 1 ;;
+      esac
+
+      ASSET="copilot-${PLATFORM}.tar.gz"
+      BASE_URL="https://github.com/github/copilot-cli/releases/download/v${VERSION}"
+
+      echo "Fetching SHA256SUMS.txt for v${VERSION}..."
+      SUMS="$(curl -fsSL "${BASE_URL}/SHA256SUMS.txt")"
+
+      CHECKSUM="$(echo "$SUMS" | awk -v a="$ASSET" '$2 == a {print $1}')"
+      if ! echo "$CHECKSUM" | grep -qE '^[a-f0-9]{64}$'; then
+        echo "Invalid or missing checksum for ${ASSET}" >&2
+        exit 1
+      fi
+
+      echo "Downloading ${BASE_URL}/${ASSET}..."
+      curl -fsSL -o "$CRAFT_PART_SRC/${ASSET}" "${BASE_URL}/${ASSET}"
+
+      ACTUAL="$(sha256sum "$CRAFT_PART_SRC/${ASSET}" | cut -d' ' -f1)"
+      if [ "$ACTUAL" != "$CHECKSUM" ]; then
+        echo "Checksum mismatch for ${ASSET}!" >&2
+        echo "  expected: $CHECKSUM" >&2
+        echo "  actual:   $ACTUAL" >&2
+        rm -f "$CRAFT_PART_SRC/${ASSET}"
+        exit 1
+      fi
+      echo "Checksum OK."
+
+      tar -xzf "$CRAFT_PART_SRC/${ASSET}" -C "$CRAFT_PART_SRC"
+      rm -f "$CRAFT_PART_SRC/${ASSET}"
+      chmod 755 "$CRAFT_PART_SRC/copilot"
+    override-build: |
+      install -Dm755 "$CRAFT_PART_SRC/copilot" "$CRAFT_PRIME/bin/copilot"
 
   workshop-prompt:
     plugin: dump
