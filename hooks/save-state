@@ -1,29 +1,20 @@
 #!/usr/bin/bash
 set -eu
 
-# Snapshot user-mutable Copilot state into $SDK_STATE_DIR so that
-# `workshop refresh` doesn't force re-extraction of the 52MB JS bundle and
-# doesn't drop any state that lives outside the copilot-config mount.
+# Snapshot ~/.cache/copilot — Copilot's self-extracted Node bundle (~52 MB,
+# keyed by version) — into $SDK_STATE_DIR so it survives `workshop refresh`
+# and `workshop restore`. Without this, every refresh would force the bundle
+# to re-extract on next launch (~30 s latency).
 #
-# What lives where (Copilot CLI 1.x):
-#   ~/.copilot/         auth, history, MCP config, settings — already preserved
-#                       across refresh by the `copilot-config` mount plug, but
-#                       captured here too as a belt-and-suspenders guarantee.
-#   ~/.cache/copilot/   self-extracted Node bundle (~50 MB), keyed by version.
-#                       NOT inside any mount; wiped on refresh/restore without
-#                       these hooks.
+# ~/.copilot is intentionally NOT snapshotted here. It is covered by the
+# copilot-config mount plug across refresh / stop / start / restore.
+# Duplicating mount-plug coverage with a state hook adds no value and risks
+# the stale-snapshot-overwriting-live-data class of bug.
 
-WORKSHOP_HOME=/home/workshop
+CACHE_SRC=/home/workshop/.cache/copilot
+CACHE_DST="$SDK_STATE_DIR/cache-copilot"
 
-snapshot() {
-    local src="$1"
-    local name="$2"
-    local dst="$SDK_STATE_DIR/$name"
-    if [ -d "$src" ]; then
-        rm -rf "$dst"
-        cp -a "$src" "$dst"
-    fi
-}
-
-snapshot "$WORKSHOP_HOME/.copilot"       copilot
-snapshot "$WORKSHOP_HOME/.cache/copilot" cache-copilot
+if [ -d "$CACHE_SRC" ]; then
+    rm -rf "$CACHE_DST"
+    cp -a "$CACHE_SRC" "$CACHE_DST"
+fi

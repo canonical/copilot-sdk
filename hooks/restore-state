@@ -1,22 +1,19 @@
 #!/usr/bin/bash
 set -eu
 
-# Restore user-mutable Copilot state captured by save-state.
-# Runs as root; `cp -a` preserves source ownership, but we chown defensively
-# in case any parent directories had to be created.
+# Replay the ~/.cache/copilot snapshot taken by save-state into the rebuilt
+# workshop. Runs as root after setup-project; `cp -a` preserves source
+# ownership, but we chown defensively in case any parent directories had to
+# be created.
+#
+# ~/.copilot is NOT touched here — that path is covered by the
+# copilot-config mount plug; see save-state for rationale.
 
-WORKSHOP_HOME=/home/workshop
+CACHE_DST=/home/workshop/.cache/copilot
+CACHE_SRC="$SDK_STATE_DIR/cache-copilot"
 
-restore() {
-    local name="$1"
-    local dst="$2"
-    local src="$SDK_STATE_DIR/$name"
-    if [ -d "$src" ]; then
-        install -d -o workshop -g workshop "$dst"
-        cp -a "$src/." "$dst/"
-        chown -R workshop:workshop "$dst"
-    fi
-}
-
-restore copilot       "$WORKSHOP_HOME/.copilot"
-restore cache-copilot "$WORKSHOP_HOME/.cache/copilot"
+if [ -d "$CACHE_SRC" ]; then
+    install -d -o workshop -g workshop "$CACHE_DST"
+    cp -a "$CACHE_SRC/." "$CACHE_DST/"
+    chown -R workshop:workshop "$CACHE_DST"
+fi
