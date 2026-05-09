@@ -15,8 +15,8 @@ A minimal workshop:
 name: copilot-cli-env
 base: ubuntu@24.04
 sdks:
-  - name: copilot-cli
-    channel: 1.0/stable
+  - name: copilot
+    channel: latest/stable
 
 actions:
   copilot-yolo: copilot --yolo --interactive="$@"
@@ -57,7 +57,7 @@ Copilot to read files, write code, run commands, and navigate your project.
 To make your host Copilot credentials available inside the workshop,
 you have two alternatives:
 
-- Set the `GH_TOKEN` or `GITHUB_TOKEN` [environment variable](https://developers.openai.com/api/docs/quickstart/) inside the workshop.
+- Set the `GH_TOKEN` or `GITHUB_TOKEN` [environment variable](https://docs.github.com/copilot/how-tos/copilot-cli) inside the workshop.
   You can pass it using the `--env` option with `workshop run` or `workshop exec`,
   or by other means such as [direnv](https://direnv.net/).
 
@@ -80,7 +80,7 @@ you have two alternatives:
 
   ```bash
   workshop stop <workshop-name>
-  workshop remount <workshop-name>/copilot-cli:copilot-config ~/.copilot
+  workshop remount <workshop-name>/copilot:copilot-config ~/.copilot
   workshop start <workshop-name>
   ```
 
