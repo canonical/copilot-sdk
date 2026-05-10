@@ -1,4 +1,3 @@
-#!/usr/bin/bash
 set -eu
 
 # Replay the ~/.cache/copilot snapshot taken by save-state into the rebuilt

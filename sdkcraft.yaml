@@ -10,11 +10,7 @@ license: https://docs.github.com/en/site-policy/github-terms/github-pre-release-
 build-base: ubuntu@24.04
 platforms:
   amd64:
-    build-on: [amd64]
-    build-for: [amd64]
   arm64:
-    build-on: [arm64]
-    build-for: [arm64]
 
 plugs:
   copilot-config:
@@ -31,26 +27,22 @@ parts:
       VERSION="$(cat "$CRAFT_PROJECT_DIR/VERSION")"
       craftctl set version="$VERSION"
 
-      case "$CRAFT_ARCH_BUILD_FOR" in
-        amd64) PLATFORM="linux-x64"   ;;
-        arm64) PLATFORM="linux-arm64" ;;
-        *) echo "Unsupported arch: $CRAFT_ARCH_BUILD_FOR" >&2; exit 1 ;;
+      case "${CRAFT_ARCH_BUILD_FOR}" in
+        amd64) PLATFORM=linux-x64   ;;
+        arm64) PLATFORM=linux-arm64 ;;
+        *) echo "Unsupported arch: ${CRAFT_ARCH_BUILD_FOR}" >&2; exit 1 ;;
       esac
-
       ASSET="copilot-${PLATFORM}.tar.gz"
-      BASE_URL="https://github.com/github/copilot-cli/releases/download/v${VERSION}"
+      DOWNLOAD_URL="https://github.com/github/copilot-cli/releases/download/v${VERSION}/${ASSET}"
 
-      echo "Fetching SHA256SUMS.txt for v${VERSION}..."
-      SUMS="$(curl -fsSL "${BASE_URL}/SHA256SUMS.txt")"
-
-      CHECKSUM="$(echo "$SUMS" | awk -v a="$ASSET" '$2 == a {print $1}')"
+      CHECKSUM="$(awk -v key="$ASSET" '$2 == key {print $1}' "$CRAFT_PROJECT_DIR/CHECKSUMS")"
       if ! echo "$CHECKSUM" | grep -qE '^[a-f0-9]{64}$'; then
-        echo "Invalid or missing checksum for ${ASSET}" >&2
+        echo "Invalid or missing checksum for ${ASSET} in CHECKSUMS" >&2
         exit 1
       fi
 
-      echo "Downloading ${BASE_URL}/${ASSET}..."
-      curl -fsSL -o "$CRAFT_PART_SRC/${ASSET}" "${BASE_URL}/${ASSET}"
+      echo "Downloading ${DOWNLOAD_URL}..."
+      curl -fsSL -o "$CRAFT_PART_SRC/${ASSET}" "${DOWNLOAD_URL}"
 
       ACTUAL="$(sha256sum "$CRAFT_PART_SRC/${ASSET}" | cut -d' ' -f1)"
       if [ "$ACTUAL" != "$CHECKSUM" ]; then
@@ -60,13 +52,12 @@ parts:
         rm -f "$CRAFT_PART_SRC/${ASSET}"
         exit 1
       fi
-      echo "Checksum OK."
 
+      echo "Checksum OK. Extracting..."
       tar -xzf "$CRAFT_PART_SRC/${ASSET}" -C "$CRAFT_PART_SRC"
       rm -f "$CRAFT_PART_SRC/${ASSET}"
-      chmod 755 "$CRAFT_PART_SRC/copilot"
     override-build: |
-      install -Dm755 "$CRAFT_PART_SRC/copilot" "$CRAFT_PRIME/bin/copilot"
+      install -Dm755 "$CRAFT_PART_SRC/copilot" "$CRAFT_PART_INSTALL/bin/copilot"
 
   workshop-prompt:
     plugin: dump

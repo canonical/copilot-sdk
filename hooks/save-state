@@ -1,4 +1,3 @@
-#!/usr/bin/bash
 set -eu
 
 # Snapshot ~/.cache/copilot — Copilot's self-extracted Node bundle (~52 MB,
