@@ -10,8 +10,7 @@ license: https://docs.github.com/en/site-policy/github-terms/github-pre-release-
 build-base: ubuntu@24.04
 platforms:
   amd64:
-    build-on: [amd64]
-    build-for: [amd64]
+  arm64:
 
 plugs:
   copilot-config:
