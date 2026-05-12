@@ -16,7 +16,7 @@ name: copilot-cli-env
 base: ubuntu@24.04
 sdks:
   - name: copilot-cli
-    channel: 1.0/stable
+    channel: latest/stable
 
 actions:
   copilot-yolo: copilot --yolo --interactive="$@"
