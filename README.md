@@ -93,7 +93,7 @@ This SDK doesn't define any slots.
 ## Documentation and guidance
 
 - [GitHub Copilot CLI documentation](https://docs.github.com/copilot/how-tos/copilot-cli)
-- [Workshop documentation](https://canonical-workshop.readthedocs-hosted.com/latest/)
+- [Workshop documentation](https://ubuntu.com/workshop/docs/)
 
 ---
 
@@ -102,7 +102,7 @@ This SDK doesn't define any slots.
 - GitHub Community:
   [GitHub Community Discussions](https://github.com/orgs/community/discussions)
 - Workshop forum:
-  [Workshop Discourse](https://discourse.canonical.com/c/engineering/workshops/34)
+  [Discourse](https://discourse.ubuntu.com/)
 - Please review our
   [Code of Conduct](https://ubuntu.com/community/ethos/code-of-conduct) before
   participating.
