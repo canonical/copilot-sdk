@@ -1,0 +1,37 @@
+summary: setup-project preserves user-edited copilot-instructions.md and is idempotent
+
+prepare: |
+  envsubst '${BASE}' <workshop.yaml.in >workshop.yaml
+  workshop launch
+
+restore: |
+  workshop remove || true
+
+execute: |
+  # The `copilot-instructions` task covers the fresh-write branch of setup-project.
+  # Here we cover the other two branches against a real workshop:
+  #   (2) copilot-instructions.md exists without the workshop-prompt fingerprint
+  #       → setup-project must append, not overwrite.
+  #   (3) copilot-instructions.md exists with the fingerprint
+  #       → setup-project must be a no-op.
+  #
+  # `workshop restore` is the lifecycle command that re-runs setup hooks
+  # (verified empirically: `refresh` is a no-op when the SDK is unchanged,
+  # and stop+start does not re-trigger provisioning).
+
+  # Branch (2): pre-seed unrelated user content, then re-run hooks.
+  workshop exec -- bash -c 'echo "MY USER NOTES" > /home/workshop/.copilot/copilot-instructions.md'
+  workshop restore
+  workshop exec -- head -1 /home/workshop/.copilot/copilot-instructions.md | MATCH "MY USER NOTES"
+  workshop exec -- cat /home/workshop/.copilot/copilot-instructions.md | \
+    MATCH "Workshop Container Environment Instructions"
+
+  # Branch (3): re-run hooks again, copilot-instructions.md must be byte-identical.
+  BEFORE=$(workshop exec -- sha256sum /home/workshop/.copilot/copilot-instructions.md | awk '{print $1}')
+  workshop restore
+  AFTER=$(workshop exec -- sha256sum /home/workshop/.copilot/copilot-instructions.md | awk '{print $1}')
+  test "$BEFORE" = "$AFTER"
+
+debug: |
+  workshop exec -- ls -la /home/workshop/.copilot/ || true
+  workshop exec -- cat /home/workshop/.copilot/copilot-instructions.md || true
