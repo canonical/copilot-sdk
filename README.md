@@ -15,7 +15,7 @@ A minimal workshop:
 name: copilot-cli-env
 base: ubuntu@24.04
 sdks:
-  - name: copilot-cli
+  - name: copilot
     channel: latest/stable
 
 actions:
@@ -80,7 +80,7 @@ you have two alternatives:
 
   ```bash
   workshop stop <workshop-name>
-  workshop remount <workshop-name>/copilot-cli:copilot-config ~/.copilot
+  workshop remount <workshop-name>/copilot:copilot-config ~/.copilot
   workshop start <workshop-name>
   ```
 
