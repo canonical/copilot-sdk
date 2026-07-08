@@ -7,4 +7,5 @@ cat <<EOF >/etc/profile.d/copilot-cli.sh
 export PATH="${SDK}/bin:\$PATH"
 EOF
 
+mkdir -p /etc/bash_completion.d
 "${SDK}/bin/copilot" completion bash >/etc/bash_completion.d/copilot
