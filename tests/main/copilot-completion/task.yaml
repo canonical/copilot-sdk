@@ -1,0 +1,27 @@
+summary: setup-base installs bash completion when the copilot CLI supports it
+
+prepare: |
+  envsubst '${BASE}' <workshop.yaml.in >workshop.yaml
+  workshop launch
+
+restore: |
+  workshop remove || true
+
+execute: |
+  # Older copilot releases don't ship the `completion` command. Only assert the
+  # completion file is installed when the bundled CLI actually supports it.
+  if workshop exec -- bash -lc 'copilot completion bash' >/dev/null 2>&1; then
+      # setup-base writes the generated completion to the standard directory.
+      workshop exec -- test -s /etc/bash_completion.d/copilot
+      workshop exec -- grep -q 'complete -o default -F _copilot copilot' \
+          /etc/bash_completion.d/copilot
+      # The completion function loads and registers in an interactive bash shell.
+      workshop exec -- bash -ic 'complete -p copilot' | MATCH "_copilot"
+  else
+      echo "copilot CLI has no completion command; skipping completion checks"
+  fi
+
+debug: |
+  workshop exec -- bash -lc 'copilot completion bash' || true
+  workshop exec -- ls -l /etc/bash_completion.d/ || true
+  workshop exec -- cat /etc/bash_completion.d/copilot || true
