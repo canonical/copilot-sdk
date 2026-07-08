@@ -1,15 +1,10 @@
 #!/usr/bin/bash
 
 apt-get update
-apt-get install ripgrep bash-completion
+apt-get install ripgrep
 
 cat <<EOF >/etc/profile.d/copilot-cli.sh
 export PATH="${SDK}/bin:\$PATH"
 EOF
 
-# Install bash shell completion. Older copilot releases don't ship the
-# `completion` command, so only write the file when generation succeeds.
-if completion="$("${SDK}/bin/copilot" completion bash 2>/dev/null)"; then
-    mkdir -p /etc/bash_completion.d
-    printf '%s\n' "$completion" >/etc/bash_completion.d/copilot
-fi
+"${SDK}/bin/copilot" completion bash >/etc/bash_completion.d/copilot
