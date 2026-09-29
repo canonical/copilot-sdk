@@ -4,5 +4,5 @@ apt-get update
 apt-get install ripgrep
 
 cat <<EOF >/etc/profile.d/copilot-cli.sh
-export PATH="${SDK}/bin:\$PATH"
+export PATH="${SDK}/wrapper:\$PATH"
 EOF

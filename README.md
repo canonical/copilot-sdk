@@ -37,7 +37,7 @@ so interactive and non-interactive actions can use the YOLO mode.
 1. No prerequisite SDKs are required.
 2. Place your project files in your project directory. No special layout is
    required; Copilot CLI works with any codebase.
-3. On launch, the SDK configures `PATH` for the `copilot` binary
+3. On launch, the SDK puts a `copilot` wrapper on `PATH`
    and adds a `copilot-instructions.md` hint about the workshop environment.
 
 ### Start a coding session
@@ -54,14 +54,27 @@ Copilot to read files, write code, run commands, and navigate your project.
 
 ### Authenticate with GitHub Copilot
 
-To make your host Copilot credentials available inside the workshop,
-you have two alternatives:
+Copilot accepts fine-grained personal access tokens (`github_pat_...`) with
+the "Copilot Requests" permission, and OAuth tokens from the Copilot CLI or
+GitHub CLI (`gh auth token`). Classic personal access tokens (`ghp_...`)
+are not supported.
 
-- Set the `GH_TOKEN` or `GITHUB_TOKEN` [environment variable](https://developers.openai.com/api/docs/quickstart/) inside the workshop.
+To make your credentials available inside the workshop,
+you have these alternatives:
+
+- Set the `COPILOT_GITHUB_TOKEN`, `GH_TOKEN`, or `GITHUB_TOKEN`
+  [environment variable](https://docs.github.com/copilot/how-tos/copilot-cli)
+  inside the workshop.
   You can pass it using the `--env` option with `workshop run` or `workshop exec`,
   or by other means such as [direnv](https://direnv.net/).
 
-- If neither variable is set, Copilot will prompt for an API token
+- Connect a secret to the `github-token` plug.
+  When `COPILOT_GITHUB_TOKEN` isn't set, the `copilot` wrapper reads the secret
+  and exports it as `COPILOT_GITHUB_TOKEN` for the Copilot process only,
+  so it takes precedence over `GH_TOKEN` and `GITHUB_TOKEN`.
+  Note that commands Copilot runs inherit this variable.
+
+- Otherwise, Copilot will prompt for an API token
   or offer browser-based login on first interactive use.
   The mount plug persists these credentials between workshop updates.
 
@@ -83,6 +96,14 @@ you have two alternatives:
   workshop remount <workshop-name>/copilot:copilot-config ~/.copilot
   workshop start <workshop-name>
   ```
+
+### `github-token`
+
+- Interface: `secret`
+- Purpose: Provides a GitHub token for Copilot from the host's secret service.
+  The `copilot` wrapper reads it with `workshopctl get-secret copilot.github-token`
+  and exports it as `COPILOT_GITHUB_TOKEN`,
+  unless that variable is already set in the workshop.
 
 ## Slots (resources this SDK provides)
 
