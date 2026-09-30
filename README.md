@@ -39,6 +39,8 @@ so interactive and non-interactive actions can use the YOLO mode.
    required; Copilot CLI works with any codebase.
 3. On launch, the SDK puts a `copilot` wrapper on `PATH`
    and adds a `copilot-instructions.md` hint about the workshop environment.
+   The SDK pins the Copilot CLI version, so the wrapper sets
+   `COPILOT_AUTO_UPDATE=false` unless you set it yourself.
 
 ### Start a coding session
 
@@ -68,7 +70,8 @@ you have these alternatives:
   You can pass it using the `--env` option with `workshop run` or `workshop exec`,
   or by other means such as [direnv](https://direnv.net/).
 
-- Connect a secret to the `github-token` plug.
+- Connect a secret to the `github-token` plug;
+  see [Use a token from the host keyring](#use-a-token-from-the-host-keyring).
   When `COPILOT_GITHUB_TOKEN` isn't set, the `copilot` wrapper reads the secret
   and exports it as `COPILOT_GITHUB_TOKEN` for the Copilot process only,
   so it takes precedence over `GH_TOKEN` and `GITHUB_TOKEN`.
@@ -77,6 +80,51 @@ you have these alternatives:
 - Otherwise, Copilot will prompt for an API token
   or offer browser-based login on first interactive use.
   The mount plug persists these credentials between workshop updates.
+
+#### Use a token from the host keyring
+
+1. On the host, create a
+   [fine-grained personal access token](https://github.com/settings/personal-access-tokens/new)
+   with the "Copilot Requests" permission,
+   or use the OAuth token of your GitHub CLI login (`gh auth token`).
+
+2. Store the token in the host keyring;
+   `secret-tool` prompts for it, so paste the token there:
+
+   ```bash
+   secret-tool store --label="copilot" --collection=default service copilot
+   ```
+
+   To store your GitHub CLI token without pasting it, pipe it in instead:
+   `gh auth token | tr -d '\n' | secret-tool store --label="copilot" --collection=default service copilot`.
+   To check that it's stored, run `secret-tool lookup service copilot`.
+
+3. Expose the keyring item through a `secret` slot on the system SDK
+   in your workshop definition:
+
+   ```yaml
+   sdks:
+     - name: system
+       slots:
+         copilot-token:
+           interface: secret
+           collection: default
+           attributes:
+             service: copilot
+     - name: copilot
+       channel: latest/stable
+   ```
+
+4. Once the workshop is launched, connect the slot to the `github-token` plug:
+
+   ```bash
+   workshop connect <workshop-name>/copilot:github-token :copilot-token
+   ```
+
+   The connection persists across `workshop refresh`;
+   repeat it after `workshop restore` or after removing and launching
+   the workshop again.
+   To disconnect, use `workshop disconnect` with the same plug.
 
 ---
 
