@@ -83,21 +83,33 @@ you have these alternatives:
 
 #### Use a token from the host keyring
 
-1. On the host, create a
-   [fine-grained personal access token](https://github.com/settings/personal-access-tokens/new)
-   with the "Copilot Requests" permission,
-   or use the OAuth token of your GitHub CLI login (`gh auth token`).
+1. Check whether the host keyring already holds a Copilot token.
+   When the keyring is available, `copilot login` on the host
+   [stores its OAuth token there](https://docs.github.com/copilot/how-tos/copilot-cli/set-up-copilot-cli/authenticate-copilot-cli)
+   under the service name `copilot-cli`.
+   To list matching items without printing the secret, run:
 
-2. Store the token in the host keyring;
+   ```bash
+   secret-tool search --all service copilot-cli | grep -v '^secret = '
+   ```
+
+   If an item is listed, skip to the next step
+   and use `service: copilot-cli` instead of `service: copilot`
+   as the slot attributes,
+   adding the item's other attributes if several items are listed.
+
+2. Otherwise, store a token in the host keyring.
+   Use a [fine-grained personal access token](https://github.com/settings/personal-access-tokens/new)
+   with the "Copilot Requests" permission;
    `secret-tool` prompts for it, so paste the token there:
 
    ```bash
    secret-tool store --label="copilot" --collection=default service copilot
    ```
 
-   To store your GitHub CLI token without pasting it, pipe it in instead:
+   To use the OAuth token of your GitHub CLI login instead, pipe it in:
    `gh auth token | tr -d '\n' | secret-tool store --label="copilot" --collection=default service copilot`.
-   To check that it's stored, run `secret-tool lookup service copilot`.
+   To check that it's stored, run `secret-tool lookup service copilot >/dev/null && echo stored`.
 
 3. Expose the keyring item through a `secret` slot on the system SDK
    in your workshop definition:
