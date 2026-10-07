@@ -1,0 +1,19 @@
+#!/usr/bin/bash
+# Runs Copilot CLI with its GitHub token from the workshop secret, if one is connected.
+# Only this wrapper is on $PATH; the SDK's node and npm stay private.
+
+sdk_dir=$(dirname "$(dirname "$(readlink -f "$0")")")
+
+# The SDK pins the Copilot CLI version. Auto-update would download newer
+# releases into ~/.cache/copilot and run them on the next launch.
+export COPILOT_AUTO_UPDATE="${COPILOT_AUTO_UPDATE:-false}"
+
+if [[ -z "${COPILOT_GITHUB_TOKEN:-}" ]]; then
+  if token=$(workshopctl get-secret copilot.github-token 2>/dev/null) && [[ -n "$token" ]]; then
+    export COPILOT_GITHUB_TOKEN="$token"
+  fi
+  unset token
+fi
+
+PATH="$sdk_dir/bin:$PATH"
+exec copilot "$@"

@@ -1,0 +1,4 @@
+name: test-copilot
+base: ${BASE}
+sdks:
+  - name: try-copilot
