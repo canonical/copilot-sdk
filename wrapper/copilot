@@ -15,4 +15,5 @@ if [[ -z "${COPILOT_GITHUB_TOKEN:-}" ]]; then
   unset token
 fi
 
-exec "$sdk_dir/bin/node" "$sdk_dir/lib/node_modules/@github/copilot/npm-loader.js" "$@"
+PATH="$sdk_dir/bin:$PATH"
+exec copilot "$@"
