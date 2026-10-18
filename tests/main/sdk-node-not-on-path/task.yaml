@@ -1,0 +1,19 @@
+summary: only the copilot wrapper is on $PATH, not the SDK's node and npm
+
+prepare: |
+  envsubst '${BASE}' <workshop.yaml.in >workshop.yaml
+  workshop launch
+
+restore: |
+  workshop remove || true
+
+execute: |
+  workshop exec -- bash -lc 'readlink -f "$(command -v copilot)"' | MATCH "/wrapper/copilot$"
+  # The bases ship no node, so the SDK's own node, npm and npx must not be found.
+  for tool in node npm npx; do
+    workshop exec -- bash -lc "! command -v $tool"
+  done
+
+debug: |
+  workshop exec -- bash -lc 'echo PATH=$PATH' || true
+  workshop exec -- bash -lc 'command -v copilot node npm npx' || true

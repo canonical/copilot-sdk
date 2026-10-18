@@ -21,6 +21,8 @@ plugs:
   copilot-config:
     interface: mount
     workshop-target: /home/workshop/.copilot
+  github-token:
+    interface: secret
 
 parts:
   copilot-cli:
@@ -34,6 +36,12 @@ parts:
       curl -fLO "https://registry.npmjs.org/@github/copilot/-/copilot-${VERSION}.tgz"
       tar -xzf "copilot-${VERSION}.tgz" --strip-components=1 -C "$CRAFT_PART_SRC"
       rm "copilot-${VERSION}.tgz"
+
+  wrapper:
+    plugin: dump
+    source: wrapper
+    organize:
+      copilot: wrapper/copilot
 
   workshop-prompt:
     plugin: dump
